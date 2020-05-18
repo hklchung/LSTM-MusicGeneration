@@ -44,7 +44,7 @@
 
 <!-- USAGE -->
 ## Usage
----
+[Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output3.mid)
 
 <!-- CONTRIBUTING -->
 ## Contributing
