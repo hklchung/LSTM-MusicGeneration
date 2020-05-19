@@ -69,7 +69,7 @@ Alternatively, if you are not a programmer but would still like to contribute to
 
 <!-- KNOWN ISSUES -->
 ## Known issues
----
+* Code is currently a bit of a mess as I wrote this all under a day
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
