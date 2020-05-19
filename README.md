@@ -5,6 +5,7 @@
 
 ![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg?style=plastic)
 ![Keras 2.3.1](https://img.shields.io/badge/keras-2.3.1-green.svg?style=plastic)
+![Music21 5.7.2](https://img.shields.io/badge/music21-5.7.2-green.svg?style=plastic)
 ![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=plastic)
 
 <br />
@@ -27,11 +28,12 @@
 * [Usage](#usage)
 * [Contributing](#contributing)
 * [Contact](#contact)
+* [Upcoming Features](#upcoming-features)
 * [Known Issues](#known-issues)
 
 <!-- ABOUT THE PROJECT -->
 ## About the Project
----
+In this project, I aim to build up a sequence model using LSTM to automatically generate musical compositions. The model is currently capable of generating music by predicting the most likely next note when given a sequence of notes, based on music compositions it has been trained on. Separate to this, the model is also capable of predicting the duration of each note in a similar manner.
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -41,6 +43,8 @@
 ### Prerequisites
 * Keras==2.3.1
 * Numpy==1.18.2
+* Pandas==1.0.3
+* Music21==5.7.2
 
 <!-- USAGE -->
 ## Usage
@@ -54,6 +58,11 @@ Alternatively, if you are not a programmer but would still like to contribute to
 <!-- CONTACT -->
 ## Contact
 * [Leslie Chung](https://github.com/hklchung)
+
+<!-- UPCOMING FEATURES -->
+## Upcoming features
+* Predict softness of notes
+* Adding silence between notes
 
 <!-- KNOWN ISSUES -->
 ## Known issues
