@@ -1,6 +1,7 @@
 from music21 import *
 import glob
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from keras.utils import np_utils, to_categorical
 from keras.utils.vis_utils import plot_model
@@ -44,6 +45,17 @@ def play_midi(midi, duration = 10):
     pygame.mixer.quit()
     if os.path.exists('temp.mid'):
         os.remove('temp.mid')
+        
+#=======================Plot model loss function===============================
+# summarize history for accuracy
+def plot_loss(history):
+    plt.plot(history.history['loss'])
+    plt.title('training loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train'], loc='upper left')
+    plt.savefig('LSTM_modl_loss.png')
+    plt.close('all')
 
 #========================Load in our music tracks==============================
 # We will load in all available tracks in Music folder and append them into a list
@@ -68,15 +80,23 @@ for i, file in enumerate(glob.glob("Music/*.mid")):
 #==========================Transform music data================================
 # Get all pitch names
 pitches = sorted(set(item for item in notes))
+# Get all duration variations
+durations = sorted(set(duration))
 # Count number of different pitches
 pitch_count = len(pitches)  
 note_count = len(notes)
+speed_count = len(durations)
 
 # Use one-hot encoding for each note and create an array 
 # First index the possible notes
 note_dict = dict()
 for i, notev in enumerate(pitches):
     note_dict[notev] = i
+    
+# Do the same for durations
+dur_dict = dict()
+for i, dur in enumerate(sorted(set(durations))):
+    dur_dict[dur] = i
 
 # Now let's construct sequences. Taking each note and encoding it as a numpy array with a 1 in the position of the note it has
 seq_len = 50
@@ -101,44 +121,46 @@ for i in range(0, num_seq):
 input_note_d = []
 for i in range(0, num_seq):
     start = 0
-    input_note_d.append(np.hstack((input_notes[i], np.array(duration)[start:start+50].reshape(50,1))))
+    input_note_d.append(np.hstack((input_notes[i], np.array(pd.get_dummies(duration))[start:start+50].reshape(50,8))))
     start += 1
 input_note_d = np.array(input_note_d)
 
 output_note_d = []
 for i in range(0, num_seq):
     start = seq_len # This is 50
-    output_note_d.append(np.hstack((output_notes[i], duration[start])))
+    output_note_d.append(np.hstack((output_notes[i], np.array(pd.get_dummies(duration))[start])))
     start += 1
 output_note_d = np.array(output_note_d)
 
 #===============================LSTM model=====================================
 model = Sequential()
-model.add(LSTM(128, return_sequences=True, input_shape=(sequence_length, pitch_count+1)))
+model.add(LSTM(128, return_sequences=True, input_shape=(seq_len, pitch_count+speed_count)))
 model.add(Dropout(0.2))
 model.add(LSTM(128, return_sequences=False))
 model.add(Dropout(0.2))
-model.add(Dense(pitch_count+1))
+model.add(Dense(pitch_count+speed_count))
 
 top_input = Input(shape=input_note_d.shape[1:])
 embedding = model(top_input)
 
 note_outs = Dense(pitch_count, activation='softmax')(embedding)
-duration_outs = Dense(1, activation='relu')(embedding)
+duration_outs = Dense(speed_count, activation='softmax')(embedding)
 
 #note_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['acc'])
 #duration_modl.compile(loss='mse', optimizer='rmsprop',metrics=['acc'])
 
 comb_modl = Model(top_input, [note_outs, duration_outs])
-comb_modl.compile(loss=['categorical_crossentropy', 'mse'],optimizer='rmsprop',metrics=['acc'])
+comb_modl.compile(loss=['categorical_crossentropy', 'categorical_crossentropy'],optimizer='rmsprop',metrics=['acc'])
 
 plot_model(comb_modl, to_file='LSTM_model.png' ,expand_nested=True, show_shapes=True, show_layer_names=True)
 
 #=============================Train LSTM model=================================
 #history = model.fit(input_note_d, output_note_d, batch_size=128, epochs=200)
 
-history = comb_modl.fit(input_note_d, [output_notes, np.array(duration[50:]).reshape(num_seq, 1)], 
-                        batch_size=128, epochs=200)
+history = comb_modl.fit(input_note_d, [output_notes, np.array(pd.get_dummies(duration))[50:]], 
+                        batch_size=128, epochs=1000)
+
+plot_loss(history)
 
 #===========================Use model to write song============================
 # Make a dictionary going backwards (with index as key and the note as the value)
@@ -147,29 +169,43 @@ for notev in note_dict.keys():
     index = note_dict[notev]
     backward_dict[index] = notev
 
+# Same for durations
+backward_dur = dict()
+for durv in dur_dict.keys():
+    index = dur_dict[durv]
+    backward_dur[index] = durv
+
 # Pick a random sequence from the input as a starting point for the prediction
 n = np.random.randint(0, len(input_note_d)-1)
 sequence = input_note_d[n]
-start_sequence = sequence.reshape(1, seq_len, pitch_count+1)
+start_sequence = sequence.reshape(1, seq_len, pitch_count+speed_count)
 output = []
 dur = []
 # Generate song with 100 notes
 for i in range(0, 100):
-    newNote, duration = comb_modl.predict(start_sequence, verbose=0)
-    # Get the position with the highest probability
+    newNote, durat = comb_modl.predict(start_sequence, verbose=0)
+    # Get the position with the highest probability for note
     index = np.argmax(newNote)
     encoded_note = to_categorical(index, pitch_count)
     output.append(encoded_note)
-    dur.append(duration)
+    # Do the same for duration
+    index2 = np.argmax(durat)
+    encoded_durat = to_categorical(index2, speed_count)
+    dur.append(encoded_durat)
     sequence = start_sequence[0][1:]
     start_sequence = np.concatenate((sequence, 
-                                     np.concatenate((encoded_note, duration.reshape(1,))).reshape(1, pitch_count+1)))
-    start_sequence = start_sequence.reshape(1, sequence_length, pitch_count+1)
+                                     np.concatenate((encoded_note, encoded_durat)).reshape(1, pitch_count+speed_count)))
+    start_sequence = start_sequence.reshape(1, seq_len, pitch_count+speed_count)
     
 finalNotes = [] 
 for element in output:
     index = list(element).index(1)
     finalNotes.append(backward_dict[index])
+
+finalDurations = []
+for element in dur:
+    index = list(element).index(1)
+    finalDurations.append(backward_dur[index])
     
 offset = 0
 output_notes = []
@@ -181,7 +217,7 @@ for i, pattern in enumerate(finalNotes):
         notes_in_chord = pattern.split('.')
         notes = []
         for current_note in notes_in_chord:
-            new_note = note.Note(pitch.Pitch(int(current_note)), quarterLength=float(dur[i]))
+            new_note = note.Note(pitch.Pitch(int(current_note)), quarterLength=finalDurations[i])
             new_note.storedInstrument = instrument.Piano()
             notes.append(new_note)
         new_chord = chord.Chord(notes)
@@ -189,7 +225,7 @@ for i, pattern in enumerate(finalNotes):
         output_notes.append(new_chord)
     # If pattern is a note
     else:
-        new_note = note.Note(pitch.Pitch(pattern), quarterLength=float(dur[i]))
+        new_note = note.Note(pitch.Pitch(pattern), quarterLength=finalDurations[i])
         new_note.offset = offset
         new_note.storedInstrument = instrument.Piano()
         output_notes.append(new_note)
