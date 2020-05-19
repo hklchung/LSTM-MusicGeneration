@@ -6,6 +6,7 @@
 ![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg?style=plastic)
 ![Keras 2.3.1](https://img.shields.io/badge/keras-2.3.1-green.svg?style=plastic)
 ![Music21 5.7.2](https://img.shields.io/badge/music21-5.7.2-green.svg?style=plastic)
+![Pygame 1.9.6](https://img.shields.io/badge/pygame-1.9.6-green.svg?style=plastic)
 ![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=plastic)
 
 <br />
@@ -25,7 +26,7 @@
 * [About the Project](#about-the-project)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
-* [Usage](#usage)
+* [Result](#result)
 * [Contributing](#contributing)
 * [Contact](#contact)
 * [Upcoming Features](#upcoming-features)
@@ -33,11 +34,11 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About the Project
-In this project, I aim to build up a sequence model using LSTM to automatically generate musical compositions. The model is currently capable of generating music by predicting the most likely next note when given a sequence of notes, based on music compositions it has been trained on. Separate to this, the model is also capable of predicting the duration of each note in a similar manner.
+In this project, I aim to build up a sequence model using LSTM to automatically produce musical compositions. The model is currently capable of generating music by predicting the most likely next note when given a sequence of notes, based on music compositions it has been trained on. Separate to this, the model is also capable of predicting the duration of each note in a similar manner.
 
 <!-- GETTING STARTED -->
 ## Getting Started
----
+To get started, please ensure you have the below packages installed.
 
 <!-- PREREQUISITES -->
 ### Prerequisites
@@ -45,10 +46,12 @@ In this project, I aim to build up a sequence model using LSTM to automatically 
 * Numpy==1.18.2
 * Pandas==1.0.3
 * Music21==5.7.2
+* Pygame==1.9.6
 
-<!-- USAGE -->
-## Usage
-[Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output3.mid)
+<!-- RESULT -->
+## Result
+Here is a sample clip from a trained model.
+[Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output4.mid)
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -61,7 +64,7 @@ Alternatively, if you are not a programmer but would still like to contribute to
 
 <!-- UPCOMING FEATURES -->
 ## Upcoming features
-* Predict softness of notes
+* Predict loudness/softness of notes
 * Adding silence between notes
 
 <!-- KNOWN ISSUES -->
