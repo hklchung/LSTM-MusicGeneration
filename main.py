@@ -121,7 +121,7 @@ for i in range(0, num_seq):
 input_note_d = []
 for i in range(0, num_seq):
     start = 0
-    input_note_d.append(np.hstack((input_notes[i], np.array(pd.get_dummies(duration))[start:start+50].reshape(50,8))))
+    input_note_d.append(np.hstack((input_notes[i], np.array(pd.get_dummies(duration))[start:start+50].reshape(50,speed_count))))
     start += 1
 input_note_d = np.array(input_note_d)
 
@@ -155,10 +155,8 @@ comb_modl.compile(loss=['categorical_crossentropy', 'categorical_crossentropy'],
 plot_model(comb_modl, to_file='LSTM_model.png' ,expand_nested=True, show_shapes=True, show_layer_names=True)
 
 #=============================Train LSTM model=================================
-#history = model.fit(input_note_d, output_note_d, batch_size=128, epochs=200)
-
 history = comb_modl.fit(input_note_d, [output_notes, np.array(pd.get_dummies(duration))[50:]], 
-                        batch_size=128, epochs=1000)
+                        batch_size=128, epochs=200)
 
 plot_loss(history)
 
