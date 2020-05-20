@@ -26,6 +26,7 @@
 * [About the Project](#about-the-project)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
+  * [The Code](#the-code)
 * [Result](#result)
 * [Contributing](#contributing)
 * [Contact](#contact)
@@ -47,6 +48,28 @@ To get started, please ensure you have the below packages installed.
 * Pandas==1.0.3
 * Music21==5.7.2
 * Pygame==1.9.6
+
+<!-- THE CODE -->
+### The Code
+Here is a summary of what I did in the code [main.py](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/main.py).
+1. Load in the required packages (see above listed prerequisites)
+2. Define music player functions to play .mid files from folder and in session midi objects using pygame package
+3. Define a function to visualise model loss over epoch
+4. Load .mid tracks from /Music folder and breakdown data in the following lists
+  a) <b>notes</b>
+  b) <b>duration</b>
+  c) <b>delta</b> (offsets)
+5. One hot encode our data, e.g. say we have a total of 40 possible notes in our loaded track with 100 notes (track length) then our one hot encoded array will have shape (40, 100). Additionally, we will breakdown our track into segments each containing 50 notes, i.e. first segment will have notes from position 0 to 49, second segment will have notes from position 1 to 50 and so on. Therefore, in this example our final notes array will have shape (60, 50, 40) for 60 segments, each 50 notes long, each note having 40 possibilities.
+6. We do the same for duration and delta, then stack notes, duration and delta arrays into one
+7. Define our LSTM model architecture with one input and 3 outputs, corresponding to our notes, duration and delta (offset) predictions
+8. Train the model
+9. Use the model to "create" a new song of length 100 notes
+  a) randomly pick a sequence from the training data
+  b) use said sequence to predict the next note, duration and delta
+  c) remove first note from the sequence and insert the predicted info to the end of the sequence
+  d) use this new sequence to predict the next note, duration and delta
+  e) repeat until we have 100 predicted notes
+  f) translate the predicted notes into midi format and save file
 
 <!-- RESULT -->
 ## Result
