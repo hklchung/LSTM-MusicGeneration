@@ -12,7 +12,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/hklchung/LSTM-MusicGeneration">
-    <img src="https://i.pinimg.com/originals/69/96/5c/69965c2849ec9b7148a5547ce6714735.jpg" height="200">
+    <img src="https://i.pinimg.com/originals/c9/6d/b2/c96db2b4d8fe3ae4a962c225b40c30a2.jpg" height="200">
   </a>
 
   <h3 align="center">Music Generation</h3>
@@ -56,7 +56,8 @@ Here are some sample clips from trained models.
 * LSTM model predicts pitch + note duration
 [Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output4.mid)
 * LSTM model predicts pitch + note duration + offset between notes
-[Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output6.mid)
+[Sample output A](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output6.mid)
+[Sample output B](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output8.mid)
 
 <!-- CONTRIBUTING -->
 ## Contributing
