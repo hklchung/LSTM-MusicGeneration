@@ -27,6 +27,7 @@
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
   * [The Code](#the-code)
+  * [Training Tips](#training-tips)
 * [Result](#result)
 * [Contributing](#contributing)
 * [Contact](#contact)
@@ -70,6 +71,11 @@ Here is a summary of what I did in the code [main.py](https://github.com/hklchun
   d) use this new sequence to predict the next note, duration and delta
   e) repeat until we have 100 predicted notes
   f) translate the predicted notes into midi format and save file
+  
+<!-- TRAINING TIPS -->
+### Training Tips
+* Training a model with more songs tend to produce worse results, this is because your songs are probably not written in the same key and temp
+* Pick songs that are not too fast or slow, and preferably with clear melody (as opposed to blues, jazz, bossa nova, etc)
 
 <!-- RESULT -->
 ## Result
