@@ -50,8 +50,13 @@ To get started, please ensure you have the below packages installed.
 
 <!-- RESULT -->
 ## Result
-Here is a sample clip from a trained model.
+Here are some sample clips from trained models.
+* LSTM model predicts pitch only
+[Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output3.mid)
+* LSTM model predicts pitch + note duration
 [Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output4.mid)
+* LSTM model predicts pitch + note duration + offset between notes
+[Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output6.mid)
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -65,11 +70,12 @@ Alternatively, if you are not a programmer but would still like to contribute to
 <!-- UPCOMING FEATURES -->
 ## Upcoming features
 * Predict loudness/softness of notes
-* Adding silence between notes
+* ~~Adding silence between notes~~ (part of updates on 20/05/2020)
 
 <!-- KNOWN ISSUES -->
 ## Known issues
-* Code is currently a bit of a mess as I wrote this all under a day
+* Code is currently a bit of a mess as I hacked through most of it
+* Quality of the predicted notes seem to have suffered after addition of note duration and note offset prediction capabilities
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
