@@ -87,11 +87,12 @@ def plot_loss(history):
 # We will load in all available tracks in Music folder and append them into a list
 notes = []
 duration = []
+delta = []
 
 for i, file in enumerate(glob.glob("Music/*.mid")):
-    
+    # Load in the midi file
     midi = converter.parse(file)[0]        
-        
+    # Get notes/chords and duration
     for e in midi.flat.notes:
         if isinstance(e, note.Note):
             notes.append(str(e.pitch))
@@ -100,6 +101,13 @@ for i, file in enumerate(glob.glob("Music/*.mid")):
             # return numerical representation of chord (normal order)
             notes.append('.'.join(str(n) for n in e.normalOrder))
             duration.append(float(e.duration.quarterLength))
+    # Get the offset of each note and convert to deltas
+    deltatemp = []
+    [deltatemp.append(x['offsetSeconds']) for x in midi.flat.notes.secondsMap]
+    deltatemp = [deltatemp[x] - deltatemp[y] for x, y in zip(range(1,len(deltatemp)),range(0, len(deltatemp)-1))]
+    deltatemp.insert(0,0)
+    delta.extend(deltatemp)
+    
     print('')
     print("{} Loaded".format(file))
 
@@ -108,10 +116,14 @@ for i, file in enumerate(glob.glob("Music/*.mid")):
 pitches = sorted(set(item for item in notes))
 # Get all duration variations
 durations = sorted(set(duration))
-# Count number of different pitches
+# Get all offset variations
+deltas = sorted(set(delta))
+# Count number of different pitches, notes, durations, offsets
 pitch_count = len(pitches)  
 note_count = len(notes)
 speed_count = len(durations)
+delta_count = len(deltas)
+
 
 # Use one-hot encoding for each note and create an array 
 # First index the possible notes
@@ -123,6 +135,11 @@ for i, notev in enumerate(pitches):
 dur_dict = dict()
 for i, dur in enumerate(sorted(set(durations))):
     dur_dict[dur] = i
+    
+# Do the same for offsets
+delta_dict = dict()
+for i, deltav in enumerate(deltas):
+    delta_dict[deltav] = i
 
 # Now let's construct sequences. Taking each note and encoding it as a numpy array with a 1 in the position of the note it has
 seq_len = 50
@@ -143,46 +160,53 @@ for i in range(0, num_seq):
         
     output_notes[i] = to_categorical(note_dict[output_note], len(pitches))
 
-# Notes with duration added at the very end of each array
+# Notes with duration and offsets added at the very end of each array
 input_note_d = []
 for i in range(0, num_seq):
     start = 0
-    input_note_d.append(np.hstack((input_notes[i], np.array(pd.get_dummies(duration))[start:start+50].reshape(50,speed_count))))
+    obj = np.hstack((input_notes[i], np.array(pd.get_dummies(duration))[start:start+50].reshape(50,speed_count)))
+    obj = np.hstack((obj, np.array(pd.get_dummies(delta))[start:start+50].reshape(50, delta_count)))
+    input_note_d.append(obj)
     start += 1
 input_note_d = np.array(input_note_d)
 
 output_note_d = []
 for i in range(0, num_seq):
     start = seq_len # This is 50
-    output_note_d.append(np.hstack((output_notes[i], np.array(pd.get_dummies(duration))[start])))
+    obj = np.hstack((output_notes[i], np.array(pd.get_dummies(duration))[start]))
+    obj = np.hstack((obj, np.array(pd.get_dummies(delta))[start]))
+    output_note_d.append(obj)
     start += 1
 output_note_d = np.array(output_note_d)
 
 #===============================LSTM model=====================================
-model = Sequential()
-model.add(LSTM(128, return_sequences=True, input_shape=(seq_len, pitch_count+speed_count)))
-model.add(Dropout(0.2))
-model.add(LSTM(128, return_sequences=False))
-model.add(Dropout(0.2))
-model.add(Dense(pitch_count+speed_count))
+def LSTM_block(output_size):
+  model = Sequential()
+  model.add(LSTM(128, return_sequences=True, input_shape=(seq_len, output_size)))
+  model.add(Dropout(0.2))
+  model.add(LSTM(128, return_sequences=False))
+  model.add(Dropout(0.2))
+  model.add(Dense(output_size))
+  return model
 
+model = LSTM(pitch_count+speed_count+delta_count)
 top_input = Input(shape=input_note_d.shape[1:])
 embedding = model(top_input)
 
 note_outs = Dense(pitch_count, activation='softmax')(embedding)
 duration_outs = Dense(speed_count, activation='softmax')(embedding)
+delta_outs = Dense(delta_count, activation='softmax')(embedding)
 
-#note_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['acc'])
-#duration_modl.compile(loss='mse', optimizer='rmsprop',metrics=['acc'])
+comb_modl = Model(top_input, [note_outs, duration_outs, delta_outs])
+comb_modl.compile(loss=['categorical_crossentropy','categorical_crossentropy','categorical_crossentropy'],
+                  optimizer='rmsprop',metrics=['acc'])
 
-comb_modl = Model(top_input, [note_outs, duration_outs])
-comb_modl.compile(loss=['categorical_crossentropy', 'categorical_crossentropy'],optimizer='rmsprop',metrics=['acc'])
-
-plot_model(comb_modl, to_file='LSTM_model.png' ,expand_nested=True, show_shapes=True, show_layer_names=True)
+plot_model(comb_modl, to_file='LSTM_model.png', expand_nested=True, show_shapes=True, show_layer_names=True)
 
 #=============================Train LSTM model=================================
-history = comb_modl.fit(input_note_d, [output_notes, np.array(pd.get_dummies(duration))[50:]], 
-                        batch_size=128, epochs=200)
+history = comb_modl.fit(input_note_d, [output_notes, np.array(pd.get_dummies(duration))[50:], 
+                                       np.array(pd.get_dummies(delta))[50:]], 
+                        batch_size=128, epochs=500)
 
 plot_loss(history)
 
@@ -198,16 +222,23 @@ backward_dur = dict()
 for durv in dur_dict.keys():
     index = dur_dict[durv]
     backward_dur[index] = durv
+    
+# Same for deltas
+backward_delta = dict()
+for deltav in delta_dict.keys():
+    index = delta_dict[deltav]
+    backward_delta[index] = deltav
 
 # Pick a random sequence from the input as a starting point for the prediction
 n = np.random.randint(0, len(input_note_d)-1)
 sequence = input_note_d[n]
-start_sequence = sequence.reshape(1, seq_len, pitch_count+speed_count)
+start_sequence = sequence.reshape(1, seq_len, pitch_count+speed_count+delta_count)
 output = []
 dur = []
+delts = []
 # Generate song with 100 notes
-for i in range(0, 100):
-    newNote, durat = comb_modl.predict(start_sequence, verbose=0)
+for i in range(0, 200):
+    newNote, durat, delt = comb_modl.predict(start_sequence, verbose=0)
     # Get the position with the highest probability for note
     index = np.argmax(newNote)
     encoded_note = to_categorical(index, pitch_count)
@@ -216,11 +247,16 @@ for i in range(0, 100):
     index2 = np.argmax(durat)
     encoded_durat = to_categorical(index2, speed_count)
     dur.append(encoded_durat)
+    # Do the same for delta
+    index3 = np.argmax(delt)
+    encoded_delts = to_categorical(index3, delta_count)
+    delts.append(encoded_delts)
+    
     sequence = start_sequence[0][1:]
     start_sequence = np.concatenate((sequence, 
-                                     np.concatenate((encoded_note, encoded_durat)).reshape(1, pitch_count+speed_count)))
-    start_sequence = start_sequence.reshape(1, seq_len, pitch_count+speed_count)
-    
+                                     np.concatenate((encoded_note, encoded_durat, encoded_delts)).reshape(1, pitch_count+speed_count+delta_count)))
+    start_sequence = start_sequence.reshape(1, seq_len, pitch_count+speed_count+delta_count)
+
 finalNotes = [] 
 for element in output:
     index = list(element).index(1)
@@ -230,6 +266,11 @@ finalDurations = []
 for element in dur:
     index = list(element).index(1)
     finalDurations.append(backward_dur[index])
+
+finalOffsets = []
+for element in delts:
+    index = list(element).index(1)
+    finalOffsets.append(backward_delta[index])
     
 offset = 0
 output_notes = []
@@ -255,7 +296,7 @@ for i, pattern in enumerate(finalNotes):
         output_notes.append(new_note)
 
     # Increase offset each iteration so that notes do not stack
-    offset += 0.5
+    offset += (finalOffsets[i] + 0.25)
     
 #=============================Save song as MIDI================================
 midi_stream = stream.Stream(output_notes)
