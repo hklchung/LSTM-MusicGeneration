@@ -80,7 +80,8 @@ Here are some sample clips from trained models. Try to listen to the clips in or
 [Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output4.mid)
 * LSTM model predicts pitch + note duration + offset between notes <br>
 [Sample output A](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output6.mid) <br>
-[Sample output B](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output8.mid)
+[Sample output B](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output8.mid) <br>
+[Sample output B (YouTube link)](https://youtu.be/2mIWyfcEPcQ)
 
 <!-- CONTRIBUTING -->
 ## Contributing
