@@ -50,13 +50,13 @@ To get started, please ensure you have the below packages installed.
 
 <!-- RESULT -->
 ## Result
-Here are some sample clips from trained models.
-* LSTM model predicts pitch only
+Here are some sample clips from trained models. Try to listen to the clips in order so that you can fully appreciate the benefits of adding extra predictive capabilities (note duration + note offset) in the LSTM model.
+* LSTM model predicts pitch only <br>
 [Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output3.mid)
-* LSTM model predicts pitch + note duration
+* LSTM model predicts pitch + note duration <br>
 [Sample output](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output4.mid)
-* LSTM model predicts pitch + note duration + offset between notes
-[Sample output A](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output6.mid)
+* LSTM model predicts pitch + note duration + offset between notes <br>
+[Sample output A](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output6.mid) <br>
 [Sample output B](https://github.com/hklchung/LSTM-MusicGeneration/blob/master/Result/output8.mid)
 
 <!-- CONTRIBUTING -->
